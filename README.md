@@ -93,3 +93,5 @@ The project currently uses mock data. To integrate with your backend API:
 - Implement additional features from FEATURES.md
 
 
+
+# metal-admin
