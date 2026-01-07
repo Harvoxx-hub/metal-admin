@@ -198,7 +198,7 @@ export default function ConnectionsPage() {
                 <div className="space-y-3">
                   {messages.map((message, index) => (
                     <div
-                      key={message.id || `message-${index}-${message.timestamp || message.createdAt || Date.now()}`}
+                      key={message.id || `message-${index}-${message.createdAt || Date.now()}`}
                       className="rounded-lg border border-gray-200 p-4 hover:bg-gray-50"
                     >
                       <div className="mb-2 flex items-center justify-between">
@@ -214,13 +214,13 @@ export default function ConnectionsPage() {
                           </span>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-medium">{formatDate(message.timestamp || message.createdAt)}</p>
-                          <p className="text-xs text-gray-500">{formatTimeAgo(message.timestamp || message.createdAt)}</p>
+                          <p className="text-sm font-medium">{formatDate(message.createdAt)}</p>
+                          <p className="text-xs text-gray-500">{formatTimeAgo(message.createdAt)}</p>
                         </div>
                       </div>
                       <div className="rounded border border-gray-200 bg-gray-50 p-3">
                         <p className="text-sm text-gray-700">
-                          {message.message || message.text || message.content || '[Media message]'}
+                          {message.message || '[Media message]'}
                         </p>
                         {message.type && message.type !== 'text' && (
                           <p className="mt-1 text-xs text-gray-500">Type: {message.type}</p>

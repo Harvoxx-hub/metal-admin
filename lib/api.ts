@@ -24,9 +24,9 @@ export const removeAuthToken = (): void => {
 const apiFetch = async (endpoint: string, options: RequestInit = {}, skipAuthRedirect = false): Promise<Response> => {
   const token = getAuthToken();
   
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...options.headers,
+    ...(options.headers as Record<string, string>),
   };
 
   if (token) {

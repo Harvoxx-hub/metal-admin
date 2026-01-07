@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useMemo } from 'react'
+import { useEffect, useState, useMemo, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Header from '@/components/Header'
 import { api } from '@/lib/api'
@@ -8,7 +8,7 @@ import { type User } from '@/lib/mockData'
 import { useDebounce } from '@/hooks/useDebounce'
 import { Users, UserCheck, UserPlus, ShieldCheck, Search, Eye, X, MapPin } from 'lucide-react'
 
-export default function UsersPage() {
+function UsersPageContent() {
   const searchParams = useSearchParams()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
@@ -488,6 +488,21 @@ export default function UsersPage() {
         </div>
       )}
     </div>
+  )
+}
+
+export default function UsersPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-white">
+        <Header title="Users" />
+        <div className="flex items-center justify-center py-12">
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <UsersPageContent />
+    </Suspense>
   )
 }
 
