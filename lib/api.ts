@@ -174,6 +174,51 @@ export const api = {
     return data;
   },
 
+  // Export all users for CSV export (fetches all pages)
+  exportAllUsers: async (params?: {
+    status?: 'all' | 'complete' | 'incomplete';
+    search?: string;
+    metalType?: 'all' | 'gold' | 'silver' | 'iron';
+  }) => {
+    const allUsers: any[] = [];
+    let page = 1;
+    let hasMore = true;
+    const limit = 100; // Max limit allowed by validation
+
+    while (hasMore) {
+      const queryParams = new URLSearchParams();
+      queryParams.append('page', page.toString());
+      queryParams.append('limit', limit.toString());
+      if (params?.status && params.status !== 'all') queryParams.append('status', params.status);
+      if (params?.search) queryParams.append('search', params.search);
+      if (params?.metalType && params.metalType !== 'all') queryParams.append('metalType', params.metalType);
+
+      const endpoint = `/admin/users?${queryParams.toString()}`;
+      const response = await apiFetch(endpoint);
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || error.message || 'Failed to fetch users for export');
+      }
+
+      const data = await response.json();
+      const users = data.data?.users || [];
+      allUsers.push(...users);
+
+      const pagination = data.data?.pagination;
+      hasMore = pagination?.hasNextPage || false;
+      page++;
+
+      // Safety limit to prevent infinite loops (allows up to 1000 users: 10 pages * 100 per page)
+      if (page > 100) {
+        console.warn('Reached maximum page limit for export. Exporting partial data.');
+        break;
+      }
+    }
+
+    return allUsers;
+  },
+
   // Admin Thoughts
   getThoughts: async (params?: {
     page?: number;

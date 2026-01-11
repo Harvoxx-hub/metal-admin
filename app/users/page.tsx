@@ -6,7 +6,7 @@ import Header from '@/components/Header'
 import { api } from '@/lib/api'
 import { type User } from '@/lib/mockData'
 import { useDebounce } from '@/hooks/useDebounce'
-import { Users, UserCheck, UserPlus, ShieldCheck, Search, Eye, X, MapPin } from 'lucide-react'
+import { Users, UserCheck, UserPlus, ShieldCheck, Search, Eye, X, MapPin, Download } from 'lucide-react'
 
 function UsersPageContent() {
   const searchParams = useSearchParams()
@@ -24,6 +24,7 @@ function UsersPageContent() {
   const [page, setPage] = useState(1)
   const [pagination, setPagination] = useState<any>(null)
   const [error, setError] = useState('')
+  const [exporting, setExporting] = useState(false)
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -126,6 +127,128 @@ function UsersPageContent() {
     })
   }
 
+  // Convert user data to CSV format
+  const convertToCSV = (users: any[]): string => {
+    if (users.length === 0) return ''
+
+    // Define CSV headers
+    const headers = [
+      'ID',
+      'Full Name',
+      'Username',
+      'Email',
+      'Phone',
+      'Status',
+      'Verified',
+      'Metal Type',
+      'Metal ID',
+      'City',
+      'State',
+      'Country',
+      'Address',
+      'Spark Balance',
+      'Connection Count',
+      'Created At',
+      'Last Active',
+    ]
+
+    // Convert users to CSV rows
+    const rows = users.map((user) => {
+      const location = user.location || {}
+      // Handle status - backend returns 'complete' or 'incomplete', or we check completedProfile
+      let status = 'Incomplete'
+      if (user.status === 'complete' || user.completedProfile === true) {
+        status = 'Complete'
+      } else if (user.status === 'incomplete' || user.completedProfile === false) {
+        status = 'Incomplete'
+      }
+      
+      return [
+        user.id || '',
+        user.fullname || user.fullName || '',
+        user.username || '',
+        user.email || '',
+        user.phone || '',
+        status,
+        user.isVerified ? 'Yes' : 'No',
+        user.metalName || user.metal || '',
+        user.metalId || '',
+        location.city || '',
+        location.state || '',
+        location.country || '',
+        location.address || '',
+        user.sparkBalance || 0,
+        user.connectionsCount || user.connectionCount || 0,
+        user.createdAt || '',
+        user.lastActiveAt || user.lastActive || user.updatedAt || '',
+      ]
+    })
+
+    // Escape CSV values (handle commas, quotes, newlines)
+    const escapeCSV = (value: any): string => {
+      if (value === null || value === undefined) return ''
+      const stringValue = String(value)
+      // If value contains comma, quote, or newline, wrap in quotes and escape quotes
+      if (stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')) {
+        return `"${stringValue.replace(/"/g, '""')}"`
+      }
+      return stringValue
+    }
+
+    // Build CSV content with proper escaping
+    const csvRows = [
+      headers.map(escapeCSV).join(','),
+      ...rows.map((row) => row.map(escapeCSV).join(',')),
+    ]
+
+    return csvRows.join('\n')
+  }
+
+  // Export users to CSV
+  const handleExportCSV = async () => {
+    setExporting(true)
+    setError('')
+
+    try {
+      // Fetch all users with current filters applied
+      const allUsers = await api.exportAllUsers({
+        status: statusFilter,
+        search: debouncedSearchQuery || undefined,
+      })
+
+      if (allUsers.length === 0) {
+        setError('No users found to export')
+        setExporting(false)
+        return
+      }
+
+      // Convert to CSV
+      const csvContent = convertToCSV(allUsers)
+
+      // Create blob and download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+      const link = document.createElement('a')
+      const url = URL.createObjectURL(blob)
+      link.setAttribute('href', url)
+      
+      // Generate filename with timestamp
+      const timestamp = new Date().toISOString().split('T')[0]
+      const filename = `users_export_${timestamp}.csv`
+      link.setAttribute('download', filename)
+      
+      link.style.visibility = 'hidden'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(url)
+    } catch (err: any) {
+      console.error('Error exporting users:', err)
+      setError(err.message || 'Failed to export users')
+    } finally {
+      setExporting(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-white">
       <Header title="User Management" />
@@ -216,6 +339,14 @@ function UsersPageContent() {
               }`}
             >
               Incomplete
+            </button>
+            <button
+              onClick={handleExportCSV}
+              disabled={exporting}
+              className="flex items-center gap-2 rounded border border-black bg-white px-4 py-2 text-black hover:bg-black hover:text-white disabled:bg-gray-100 disabled:text-gray-400"
+            >
+              <Download className="h-4 w-4" />
+              {exporting ? 'Exporting...' : 'Export CSV'}
             </button>
           </div>
         </div>
