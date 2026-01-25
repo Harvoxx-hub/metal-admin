@@ -210,9 +210,20 @@ function UsersPageContent() {
     setError('')
 
     try {
-      // Fetch all users with current filters applied
+      // Invert the status filter for export: export all users EXCEPT those matching the current filter
+      let exportStatus: 'all' | 'complete' | 'incomplete' = 'all'
+      if (statusFilter === 'complete') {
+        // If filter is "complete", export all except complete (i.e., only incomplete)
+        exportStatus = 'incomplete'
+      } else if (statusFilter === 'incomplete') {
+        // If filter is "incomplete", export all except incomplete (i.e., only complete)
+        exportStatus = 'complete'
+      }
+      // If filter is "all", export all users (no exclusion)
+
+      // Fetch all users with inverted filter applied
       const allUsers = await api.exportAllUsers({
-        status: statusFilter,
+        status: exportStatus,
         search: debouncedSearchQuery || undefined,
       })
 
