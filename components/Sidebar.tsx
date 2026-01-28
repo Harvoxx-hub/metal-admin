@@ -3,13 +3,14 @@
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { useState } from 'react'
-import { LayoutDashboard, Users as UsersIcon, MessageSquare, Menu, X, MessageCircle, Megaphone, LogOut, Link2 } from 'lucide-react'
+import { LayoutDashboard, Users as UsersIcon, MessageSquare, Menu, X, MessageCircle, Megaphone, LogOut, Link2, ListChecks } from 'lucide-react'
 import { removeAuthToken } from '@/lib/api'
 
 const menuItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { path: '/users', label: 'Users', icon: UsersIcon },
   { path: '/thoughts', label: 'Thoughts', icon: MessageSquare },
+  { path: '/prompts', label: 'Prompts', icon: ListChecks },
   { path: '/feedback', label: 'Feedback', icon: MessageCircle },
   { path: '/broadcast', label: 'Broadcast', icon: Megaphone },
   { path: '/connections', label: 'Connections (Melt)', icon: Link2 },

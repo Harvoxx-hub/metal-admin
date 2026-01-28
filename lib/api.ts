@@ -423,6 +423,55 @@ export const api = {
     return data;
   },
 
+  // Admin Prompts (question bank management)
+  getPrompts: async () => {
+    const response = await apiFetch('/admin/prompts');
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || error.message || 'Failed to fetch prompts');
+    }
+    const data = await response.json();
+    return data;
+  },
+
+  createPrompt: async (text: string) => {
+    const response = await apiFetch('/admin/prompts', {
+      method: 'POST',
+      body: JSON.stringify({ text }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || error.message || 'Failed to create prompt');
+    }
+    const data = await response.json();
+    return data;
+  },
+
+  updatePrompt: async (id: string, text: string) => {
+    const response = await apiFetch(`/admin/prompts/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ text }),
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || error.message || 'Failed to update prompt');
+    }
+    const data = await response.json();
+    return data;
+  },
+
+  deletePrompt: async (id: string) => {
+    const response = await apiFetch(`/admin/prompts/${id}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || error.message || 'Failed to delete prompt');
+    }
+    const data = await response.json();
+    return data;
+  },
+
   // Health check
   healthCheck: async () => {
     const response = await apiFetch('/admin/health');
